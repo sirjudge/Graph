@@ -272,6 +272,20 @@ public class EdgeWeightedGraph {
     	}
     	Collections.sort(edgeySet);
 
+        for(Edge e : edgeySet){
+            int v = e.getV();
+            int w = e.getW();
+            KrusNode setV = findSet(v);
+            KrusNode setW = findSet(w);
+            if(!setV.equals(setW)){
+            	union(setV, setW);
+            	System.out.println(e);
+            }
+            else{
+            	edgeySet.remove(e);
+            }
+        }
+
     }
     
     
