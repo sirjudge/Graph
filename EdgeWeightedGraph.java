@@ -64,9 +64,13 @@ public class EdgeWeightedGraph {
      * @throws IllegalArgumentException if {@code V < 0}
      */
     public EdgeWeightedGraph(int V) {
-        if (V < 0) throw new IllegalArgumentException("Number of vertices must be nonnegative");
+    	if(V < 0) throw new IllegalArgumentException("Number of vertices must be nonnegative");
         this.V = V;
         this.E = 0;
+        
+        set = new ArrayList<>();
+    	edgeySet = new ArrayList<>();
+    	
         adj = (Bag<Edge>[]) new Bag[V];
         for (int v = 0; v < V; v++) {
             adj[v] = new Bag<Edge>();
@@ -246,11 +250,6 @@ public class EdgeWeightedGraph {
     	KrusNode kNode = set.get(x);
     	if(kNode.getParentNode() == kNode) return kNode;
     	return set.get(x).getParentNode();
-    	
-    	/*for(KrusNode kn:set){
-    		if(kn.getParentNode() ==  kn) return kn;
-    	}
-    	return null;*/
     }
     
     public void union(KrusNode x,KrusNode y){
@@ -285,7 +284,6 @@ public class EdgeWeightedGraph {
             	edgeySet.remove(e);
             }
         }
-
     }
     
     
@@ -293,6 +291,7 @@ public class EdgeWeightedGraph {
         In in = new In(args[0]);
         EdgeWeightedGraph G = new EdgeWeightedGraph(in);
         StdOut.println(G);
+        G.Kruskal();
     }
 
 }
