@@ -57,6 +57,7 @@ public class EdgeWeightedGraph {
     private Bag<Edge>[] adj;
     private ArrayList<KrusNode> set;
     private ArrayList<Edge> edgeySet;
+    private ArrayList<Edge> edgesLookedAt;
     /**
      * Initializes an empty edge-weighted graph with {@code V} vertices and 0 edges.
      *
@@ -64,13 +65,12 @@ public class EdgeWeightedGraph {
      * @throws IllegalArgumentException if {@code V < 0}
      */
     public EdgeWeightedGraph(int V) {
-    	if(V < 0) throw new IllegalArgumentException("Number of vertices must be nonnegative");
+        if (V < 0) throw new IllegalArgumentException("Number of vertices must be nonnegative");
         this.V = V;
         this.E = 0;
-        
+        edgeySet = new ArrayList<>();
         set = new ArrayList<>();
-    	edgeySet = new ArrayList<>();
-    	
+        edgesLookedAt = new ArrayList<>();
         adj = (Bag<Edge>[]) new Bag[V];
         for (int v = 0; v < V; v++) {
             adj[v] = new Bag<Edge>();
@@ -233,64 +233,90 @@ public class EdgeWeightedGraph {
         return s.toString();
     }
 
+    public void makeSet(int x){
+        KrusNode kNode = new KrusNode();
+        set.add(kNode);
+    }
+
+    //private Bag<Edge>[] adj;
+    public KrusNode findSet(int x){
+    	//System.out.println(x);
+    	//printSet();
+    	//printEdgeySet();
+        KrusNode kNode = set.get(x);
+        if(kNode.getParentNode().equals(kNode)) return kNode;
+        return set.get(x).getParentNode();
+    }
+
+    public void union(KrusNode x,KrusNode y){
+        if(x.getSize() > y.getSize()){
+            y.setParentNode(x.getParentNode());
+            y.plusOneSize();
+        }
+        else{
+            x.setParentNode(y.getParentNode());
+            x.plusOneSize();
+        }
+    }
+
+    public void printSet(){
+    	System.out.print("[");
+    	for(KrusNode n : set){
+    		System.out.print(n + ",");
+    	}
+    	System.out.println("]");
+    }
+    public void printEdgeySet(){
+    	System.out.print("[");
+    	for(Edge e: edgeySet){
+    		System.out.print(e+ ",");
+    	}
+    	System.out.println("]");
+    }
+    
+    public void kruskal(){
+        for(Bag<Edge> b: adj){
+            for(Edge e: b){
+                edgeySet.add(e);
+            }
+        }
+        Collections.sort(edgeySet);//sort the list of edges implimenting krusNode
+        
+        for(Edge e: edgeySet){ //go through list of edges, initialize the set arrayList
+        	int v = e.getV();  //get each vertex
+            int w = e.getW();
+            makeSet(v);
+            makeSet(w);
+        }
+        
+        for(Edge e : edgeySet){ //loop through again, find set on each vertex
+        	int v = e.getV();
+            int w = e.getW();
+        	KrusNode setV = findSet(v);
+            KrusNode setW = findSet(w);
+            if(!setV.equals(setW)){ //if they have the same root node, it's a cycle, don't print
+            	union(setV, setW);
+            	if(!edgesLookedAt.contains(e)){
+            		edgesLookedAt.add(e);
+            		System.out.println(e);
+            	}
+            }
+        }   
+    }
+
+
+
     /**
      * Unit tests the {@code EdgeWeightedGraph} data type.
      *
      * @param args the command-line arguments
      */
     
-    
-    public void makeSet(int x,int s){
-    	KrusNode kNode = new KrusNode();
-    	set.add(kNode);   	
-    }
-    
-    //private Bag<Edge>[] adj;
-    public KrusNode findSet(int x){
-    	KrusNode kNode = set.get(x);
-    	if(kNode.getParentNode() == kNode) return kNode;
-    	return set.get(x).getParentNode();
-    }
-    
-    public void union(KrusNode x,KrusNode y){
-    	if(x.getSize() > y.getSize()){
-    		y.setParentNode(x.getParentNode());
-    		y.plusOneSize();
-    	}
-    	else{
-    		x.setParentNode(y.getParentNode());
-    		x.plusOneSize();
-    	}
-    }
-    
-    public void Kruskal(){
-    	for(Bag<Edge> b: adj){
-    		for(Edge e: b){
-    			edgeySet.add(e);
-    		}
-    	}
-    	Collections.sort(edgeySet);
-
-        for(Edge e : edgeySet){
-            int v = e.getV();
-            int w = e.getW();
-            KrusNode setV = findSet(v);
-            KrusNode setW = findSet(w);
-            if(!setV.equals(setW)){
-            	union(setV, setW);
-            	System.out.println(e);
-            }
-            else{
-            	edgeySet.remove(e);
-            }
-        }
-    }
-    
     public static void main(String[] args) {
         In in = new In(args[0]);
         EdgeWeightedGraph G = new EdgeWeightedGraph(in);
         StdOut.println(G);
-        G.Kruskal();
+        G.kruskal();
     }
 
 }
