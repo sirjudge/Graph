@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Stack;
-
 /******************************************************************************
  *  Compilation:  javac EdgeWeightedGraph.java
  *  Execution:    java EdgeWeightedGraph filename.txt
@@ -246,38 +245,47 @@ public class EdgeWeightedGraph {
 		}
 		return s.toString();
 	}
-
+	/*
+	 * creates a KrusNode with itself as the root node. These will later be all connected using Kruskal's
+	 */
 	public void makeSet(int x) {
 		KrusNode kNode = new KrusNode();
 		set.add(kNode);
 	}
 
+	/*
+	 * getParentNode(int x) takes in an int that points to a specified node in the list set
+	 * getParentNode(KrusNode krusIn) takes in a KrusNode and returns it's parent node. It will return 
+	 * itself if you have already reached the root node (it is it's own parent node)
+	 * 
+	 * getParentNode() and getRootNode() work in parallel to be the method findSet();
+	*/
 	public KrusNode getParentNode(int x) {
-		KrusNode kNode = set.get(x); // get the node from the set
-		if (kNode.getParentNode().equals(kNode))
-			return kNode; // if the parent node is the node (it is the root
-							// node) return that node
-		else
-			return kNode.getParentNode();
+		KrusNode kNode = set.get(x); // get the node from the set of verticies
+		if (kNode.getParentNode().equals(kNode)) return kNode; // if kNode is the root node, return kNode
+		else return getRootNode(getParentNode(kNode)); //else return it's parent Node
 	}
-
 	public KrusNode getParentNode(KrusNode krusIn) {
-		if (krusIn.getParentNode().equals(krusIn))
-			return krusIn; // if the parent node is the node (it is the root
-							// node) return that node
-		else
-			return krusIn.getParentNode();
+		if (krusIn.getParentNode().equals(krusIn)) return krusIn; // if the node is the root node return that node
+		else return krusIn.getParentNode(); //else return the parent node
 	}
-
+	/*
+	 * Uses recursion to get the Root node
+	 * This gets used in getParentNode.
+	 */
 	public KrusNode getRootNode(KrusNode kNode){
-		if(kNode.getParentNode().equals(kNode)) return kNode;
-		else return getRootNode(kNode.getParentNode());
+		if(kNode.getParentNode().equals(kNode)) return kNode; //if kNode is the root node return it
+		else return getRootNode(kNode.getParentNode()); //else recursively get the parent node until you've reached root
 	}
 
 	
-	
-	
-	public void union(KrusNode k1, KrusNode k2) {
+	/*
+	 * Method creates a union between two different nodes. 
+	 * 
+	 * if the size of k1 is greater than the size of k2, then we set k1 as the parent
+	 * if the size of k2 is greater than the size of k1, then we set k2 as the parent 
+	 */
+	public void union(KrusNode k1, KrusNode k2) { 
 		if (k1.getSize() > k2.getSize()) {
 			k2.setParentNode(k1.getParentNode());
 			k2.plusOneSize();
@@ -287,6 +295,10 @@ public class EdgeWeightedGraph {
 		}
 	}
 
+	/*
+	 * methods that print out the set of KrusNodes and the set of edges
+	 * Use these to display the list in a nice organized fashion
+	 */
 	public void printSet() {
 		System.out.print("[");
 		for (KrusNode n : set) {
@@ -294,7 +306,6 @@ public class EdgeWeightedGraph {
 		}
 		System.out.println("]");
 	}
-
 	public void printEdgeySet() {
 		System.out.print("[");
 		for (Edge e : edgeySet) {
@@ -303,37 +314,45 @@ public class EdgeWeightedGraph {
 		System.out.println("]");
 	}
 
+	/*
+	 * Kruskal's Algorithm method
+	 */
 	public void kruskal() {
 		for (Bag<Edge> b : adj) {
 			for (Edge e : b) {
 				edgeySet.add(e);
 			}
 		}
-		Collections.sort(edgeySet);// sort the bag of edges
-
-		for (Edge e : edgeySet) { // go through list of edges, initialize the set of verticies
-			int v = e.getV(); // get each vertex
+		// sort the bag of edges
+		Collections.sort(edgeySet);
+		// go through list of edges, initialize the set of verticies
+		for (Edge e : edgeySet) { 
+			// get each vertex
+			int v = e.getV();
 			int w = e.getW();
-			makeSet(v);
+			//make a set of both v and w
+			makeSet(v); 
 			makeSet(w);
 		}
 
 		for (Edge e : edgeySet) { // loop through again, calls findSet on each vertex
-			int v = e.getV(); // get each vertex
+			// get each vertex
+			int v = e.getV();
 			int w = e.getW();
 			
 			// find the root node for each vertex
-			KrusNode pNodeV = getRootNode(getParentNode(v));
-			KrusNode pNodeW = getRootNode(getParentNode(w));
+			KrusNode rootNodeV = getRootNode(getParentNode(v)); //gets the rootNode of each set
+			KrusNode rootNodeW = getRootNode(getParentNode(w));
+			
+			KrusNode pNodeV = getParentNode(v); //get the parent node of each set
+			KrusNode pNodeW = getParentNode(w); //get and store the parent node of each set
 			
 			// if they have the same root node, it's a cycle, don't print
-			//System.out.println("I am checking: " + e);
-			if (pNodeV != pNodeW) {
-				// if we have not already looked at the edge in the set
-				if (!edgesLookedAt.contains(e)) {
+			if (rootNodeV != rootNodeW) {
+				if (!edgesLookedAt.contains(e)) { //if we have not already checked it
 					edgesLookedAt.add(e); // add it to the edgesLookedAt
 					System.out.println(e); // print out the edge
-					union(pNodeV, pNodeW);
+					union(pNodeV, pNodeW); //make a union between both parent nodes
 				}
 			}
 		}
